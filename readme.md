@@ -139,6 +139,19 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
             <td align="center"></td>
         </tr>
+        <tr>
+            <td align="left" width="32%">Transformer</td>
+            <td colspan="6" width="68%"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.BernoulliRBM.html">neural_network.BernoulliRBM</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/transformer/BernoulliRBM/js/basics.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
     </tbody>
 </table>
 

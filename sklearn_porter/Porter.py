@@ -56,7 +56,7 @@ class Porter(object):
 
         # Check method support:
         method = str(method).strip().lower()
-        if method not in ['predict', 'predict_proba']:
+        if method not in ['predict', 'predict_proba', 'transform']:
             error = "The given method '{}' isn't supported.".format(method)
             raise AttributeError(error)
         self.target_method = method
@@ -95,6 +95,7 @@ class Porter(object):
         # Determine the local supported estimators:
         self.supported_classifiers = self._classifiers
         self.supported_regressors = self._regressors
+        self.supported_transformers = self._transformers
 
         # Read algorithm name and type:
         self.estimator_name = str(type(self.estimator).__name__)
@@ -102,8 +103,10 @@ class Porter(object):
             self.estimator_type = 'classifier'
         elif isinstance(self.estimator, self.supported_regressors):
             self.estimator_type = 'regressor'
+        elif isinstance(self.estimator, self.supported_transformers):
+            self.estimator_type = 'transformer'
         else:
-            error = "Currently the given estimator '{estimator}' isn't" \
+            error = "Currently the given algorithm '{estimator}' isn't" \
                     " supported.".format(**self.__dict__)
             raise ValueError(error)
 
@@ -175,7 +178,6 @@ class Porter(object):
             The ported model as string or a dictionary
             with further information.
         """
-
         if class_name is None or class_name == '':
             class_name = self.estimator_name
 
@@ -246,14 +248,13 @@ class Porter(object):
     @property
     def _classifiers(self):
         """
-        Get a set of supported classifiers.
+        Get the set of supported classifiers.
 
         Returns
         -------
         classifiers : {set}
             The set of supported classifiers.
         """
-
         # sklearn version < 0.18.0
         classifiers = (
             AdaBoostClassifier,
@@ -267,36 +268,49 @@ class Porter(object):
             RandomForestClassifier,
             SVC,
         )
-
         # sklearn version >= 0.18.0
         if self.sklearn_ver[:2] >= (0, 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPClassifier
             classifiers += (MLPClassifier, )
-
         return classifiers
 
     @property
     def _regressors(self):
         """
-        Get a set of supported regressors.
+        Get the set of supported regressors.
 
         Returns
         -------
         regressors : {set}
             The set of supported regressors.
         """
-
         # sklearn version < 0.18.0
         regressors = ()
-
         # sklearn version >= 0.18.0
         if self.sklearn_ver[:2] >= (0, 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPRegressor
             regressors += (MLPRegressor, )
-
         return regressors
+
+    @property
+    def _transformers(self):
+        """
+        Get the set of supported transformers.
+
+        Returns
+        -------
+        transformers : {set}
+            The set of supported transformers.
+        """
+        # sklearn version < 0.18.0
+        transformers = ()
+        # sklearn version >= 0.18.0
+        if self.sklearn_ver[:2] >= (0, 18):
+            from sklearn.neural_network import BernoulliRBM
+            transformers += (BernoulliRBM, )
+        return transformers
 
     def predict(self, X, class_name=None, method_name=None,
                 tnp_dir='tmp', keep_tmp_dir=False, num_format=lambda x: str(x)):
@@ -330,10 +344,8 @@ class Porter(object):
             y : int or array-like, shape (n_samples,)
             The predicted class or classes.
         """
-
         if class_name is None:
             class_name = self.estimator_name
-
         if method_name is None:
             method_name = self.target_method
 
